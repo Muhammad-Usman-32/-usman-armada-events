@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { EventsModule } from './events/events.module';
 import { RsvpsModule } from './rsvps/rsvps.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { RsvpsModule } from './rsvps/rsvps.module';
     AuthModule,
     EventsModule,
     RsvpsModule,
+    SettingsModule,
   ],
 })
 export class AppModule {}
