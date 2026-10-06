@@ -1,0 +1,22 @@
+.layout-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-main {
+  flex: 1;
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.layout-footer {
+  border-top: 1px solid var(--border);
+  background-color: var(--surface);
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  font-size: var(--font-size-xs);
+  color: var(--muted);
+}
