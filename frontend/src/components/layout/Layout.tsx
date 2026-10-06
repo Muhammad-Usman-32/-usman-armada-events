@@ -1,24 +1,17 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navbar } from './Navbar';
+import { useAuth } from '../../context/AuthContext';
 import './Layout.css';
 
-interface LayoutProps {
-  user?: {
-    name: string;
-    email: string;
-    avatar?: string | null;
-  } | null;
-  onLogout?: () => void;
-}
-
-export const Layout: React.FC<LayoutProps> = ({ user, onLogout }) => {
+export const Layout: React.FC = () => {
+  const { user, logout } = useAuth();
   const appName = import.meta.env.VITE_APP_NAME || 'Armada Events';
   const year = new Date().getFullYear();
 
   return (
     <div className="layout-root">
-      <Navbar user={user} onLogout={onLogout} />
+      <Navbar user={user} onLogout={logout} />
       <main className="layout-main">
         <Outlet />
       </main>

@@ -1,18 +1,36 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { AuthProvider } from './context/AuthContext';
 import { Layout } from './components/layout/Layout';
+import { ProtectedRoute } from './components/common/ProtectedRoute';
+import { LoginPage } from './pages/LoginPage';
 
 export const App: React.FC = () => {
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<div>Welcome to Armada Events</div>} />
-          <Route path="login" element={<div>Login Page</div>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+
+            <Route element={<Layout />}>
+              <Route element={<ProtectedRoute />}>
+                <Route index element={<div>Events List Page</div>} />
+                <Route path="events/new" element={<div>Create Event Page</div>} />
+                <Route path="events/:id" element={<div>Event Detail Page</div>} />
+                <Route path="events/:id/edit" element={<div>Edit Event Page</div>} />
+                <Route path="my-rsvps" element={<div>My RSVPs Page</div>} />
+              </Route>
+            </Route>
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 };
 
