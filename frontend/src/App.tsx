@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
+import { EventsListPage } from './pages/EventsListPage';
 
 export const App: React.FC = () => {
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
@@ -18,7 +19,7 @@ export const App: React.FC = () => {
 
             <Route element={<Layout />}>
               <Route element={<ProtectedRoute />}>
-                <Route index element={<div>Events List Page</div>} />
+                <Route index element={<EventsListPage />} />
                 <Route path="events/new" element={<div>Create Event Page</div>} />
                 <Route path="events/:id" element={<div>Event Detail Page</div>} />
                 <Route path="events/:id/edit" element={<div>Edit Event Page</div>} />
