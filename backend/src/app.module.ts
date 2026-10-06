@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { EventsModule } from './events/events.module';
 import { RsvpsModule } from './rsvps/rsvps.module';
 import { SettingsModule } from './settings/settings.module';
+import { RemindersModule } from './reminders/reminders.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { SettingsModule } from './settings/settings.module';
     EventsModule,
     RsvpsModule,
     SettingsModule,
+    RemindersModule,
   ],
 })
 export class AppModule {}
