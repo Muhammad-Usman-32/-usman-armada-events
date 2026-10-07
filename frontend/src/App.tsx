@@ -8,6 +8,7 @@ import { LoginPage } from './pages/LoginPage';
 import { EventsListPage } from './pages/EventsListPage';
 import { EventFormPage } from './pages/EventFormPage';
 import { EventDetailPage } from './pages/EventDetailPage';
+import { MyRsvpsPage } from './pages/MyRsvpsPage';
 
 export const App: React.FC = () => {
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
@@ -25,7 +26,7 @@ export const App: React.FC = () => {
                 <Route path="events/new" element={<EventFormPage />} />
                 <Route path="events/:id" element={<EventDetailPage />} />
                 <Route path="events/:id/edit" element={<EventFormPage />} />
-                <Route path="my-rsvps" element={<div>My RSVPs Page</div>} />
+                <Route path="my-rsvps" element={<MyRsvpsPage />} />
               </Route>
             </Route>
 
