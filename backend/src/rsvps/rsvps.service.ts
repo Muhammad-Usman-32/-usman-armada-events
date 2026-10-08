@@ -90,7 +90,10 @@ export class RsvpsService {
 
   async findMyRsvps(userId: string) {
     const rsvps = await this.prisma.rsvp.findMany({
-      where: { userId },
+      where: {
+        userId,
+        status: RsvpStatus.going,
+      },
       orderBy: { updatedAt: 'desc' },
       include: {
         event: {
