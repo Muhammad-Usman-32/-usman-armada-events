@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { EventItem } from '../types';
+import { Loader } from '../components/common/Loader';
+import { ErrorMessage } from '../components/common/ErrorMessage';
 import './EventDetailPage.css';
 
 export const EventDetailPage: React.FC = () => {
@@ -98,20 +100,16 @@ export const EventDetailPage: React.FC = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="state-container">
-        <div className="state-title">Loading event details...</div>
-      </div>
-    );
+    return <Loader label="Loading event details..." />;
   }
 
   if (errorMessage || !event) {
     return (
-      <div className="state-container">
-        <div className="state-title" style={{ color: 'var(--danger)' }}>
-          Event Not Found
-        </div>
-        <p className="state-desc">{errorMessage || 'The requested event does not exist.'}</p>
+      <div className="event-detail-container">
+        <ErrorMessage
+          message={errorMessage || 'The requested event does not exist.'}
+          onRetry={fetchEvent}
+        />
         <Link to="/" className="btn-secondary">
           &larr; Back to Events
         </Link>
@@ -119,7 +117,7 @@ export const EventDetailPage: React.FC = () => {
     );
   }
 
-  const isOwner = user && event.createdBy === user.id;
+  const isOwner = Boolean(user?.id && String(event.createdBy) === String(user.id));
   const isGoing = event.myRsvpStatus === 'going';
 
   return (
@@ -172,7 +170,7 @@ export const EventDetailPage: React.FC = () => {
             <span className="event-detail-meta-icon">👤</span>
             <div className="event-detail-meta-text">
               <span className="event-detail-meta-label">Organized By</span>
-              <span className="event-detail-meta-val">{event.creator.name}</span>
+              <span className="event-detail-meta-val">{event.creator?.name || 'Organizer'}</span>
             </div>
           </div>
 
@@ -246,23 +244,11 @@ export const EventDetailPage: React.FC = () => {
                     src={attendee.avatar}
                     alt={attendee.name}
                     className="attendee-chip-avatar"
-                  />
-                ) : (
-                  <div
-                    className="attendee-chip-avatar"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: 'var(--primary-light)',
-                      color: 'var(--primary)',
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
                     }}
-                  >
-                    {attendee.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
+                  />
+                ) : null}
                 <span>{attendee.name}</span>
               </div>
             ))}
