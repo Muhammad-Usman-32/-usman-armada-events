@@ -35,19 +35,23 @@ export class EventsService {
     };
   }
 
-  async findAll(userId: string, filter: 'upcoming' | 'past' | 'all' = 'upcoming') {
+  async findAll(userId: string, filter: 'all' | 'upcoming' | 'past' = 'all', mine?: boolean) {
     const now = new Date();
-    let whereClause = {};
+    const whereClause: any = {};
     let orderByClause: { date: 'asc' | 'desc' } = { date: 'asc' };
 
     if (filter === 'upcoming') {
-      whereClause = { date: { gte: now } };
+      whereClause.date = { gte: now };
       orderByClause = { date: 'asc' };
     } else if (filter === 'past') {
-      whereClause = { date: { lt: now } };
+      whereClause.date = { lt: now };
       orderByClause = { date: 'desc' };
     } else {
       orderByClause = { date: 'asc' };
+    }
+
+    if (mine) {
+      whereClause.createdBy = userId;
     }
 
     const events = await this.prisma.event.findMany({
@@ -143,6 +147,8 @@ export class EventsService {
 
     return {
       ...rest,
+      createdBy: event.createdBy,
+      creator: event.creator,
       goingCount: _count.rsvps,
       myRsvpStatus: userRsvp?.status || null,
       attendees,

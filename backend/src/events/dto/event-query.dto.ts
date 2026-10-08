@@ -1,9 +1,15 @@
-import { IsIn, IsOptional } from 'class-validator';
+import { IsBoolean, IsIn, IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class EventQueryDto {
   @IsOptional()
-  @IsIn(['upcoming', 'past', 'all'], {
-    message: 'Filter must be either "upcoming", "past", or "all"',
+  @IsIn(['all', 'upcoming', 'past'], {
+    message: 'Filter must be either "all", "upcoming", or "past"',
   })
-  filter?: 'upcoming' | 'past' | 'all' = 'upcoming';
+  filter?: 'all' | 'upcoming' | 'past' = 'all';
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true || value === '1')
+  @IsBoolean()
+  mine?: boolean;
 }

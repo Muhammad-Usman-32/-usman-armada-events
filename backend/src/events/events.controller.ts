@@ -29,7 +29,7 @@ export class EventsController {
 
   @Get()
   async findAll(@CurrentUser() user: User, @Query() query: EventQueryDto) {
-    return this.eventsService.findAll(user.id, query.filter);
+    return this.eventsService.findAll(user.id, query.filter, query.mine);
   }
 
   @Get(':id')
