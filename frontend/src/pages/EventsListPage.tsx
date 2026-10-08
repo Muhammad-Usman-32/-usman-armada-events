@@ -1,21 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { EventItem } from '../types';
+import { Loader } from '../components/common/Loader';
+import { ErrorMessage } from '../components/common/ErrorMessage';
+import { EmptyState } from '../components/common/EmptyState';
 import './EventsListPage.css';
 
 export const EventsListPage: React.FC = () => {
   const [events, setEvents] = useState<EventItem[]>([]);
-  const [filter, setFilter] = useState<'upcoming' | 'past' | 'all'>('upcoming');
+  const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
+  const [onlyMine, setOnlyMine] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const fetchEvents = async () => {
     setIsLoading(true);
     setErrorMessage(null);
     try {
       const response = await api.get<EventItem[]>('/events', {
-        params: { filter },
+        params: {
+          filter,
+          mine: onlyMine ? 'true' : undefined,
+        },
       });
       setEvents(response.data);
     } catch (err: any) {
@@ -28,7 +36,7 @@ export const EventsListPage: React.FC = () => {
 
   useEffect(() => {
     fetchEvents();
-  }, [filter]);
+  }, [filter, onlyMine]);
 
   const formatDate = (isoString: string) => {
     try {
@@ -58,67 +66,83 @@ export const EventsListPage: React.FC = () => {
         </Link>
       </div>
 
-      <div className="filter-bar">
-        <button
-          type="button"
-          className={`filter-btn ${filter === 'upcoming' ? 'active' : ''}`}
-          onClick={() => setFilter('upcoming')}
-        >
-          Upcoming
-        </button>
-        <button
-          type="button"
-          className={`filter-btn ${filter === 'past' ? 'active' : ''}`}
-          onClick={() => setFilter('past')}
-        >
-          Past
-        </button>
-        <button
-          type="button"
-          className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => setFilter('all')}
-        >
-          All
-        </button>
+      <div className="filter-container">
+        <div className="filter-bar">
+          <button
+            type="button"
+            className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
+            onClick={() => setFilter('all')}
+          >
+            All
+          </button>
+          <button
+            type="button"
+            className={`filter-btn ${filter === 'upcoming' ? 'active' : ''}`}
+            onClick={() => setFilter('upcoming')}
+          >
+            Upcoming
+          </button>
+          <button
+            type="button"
+            className={`filter-btn ${filter === 'past' ? 'active' : ''}`}
+            onClick={() => setFilter('past')}
+          >
+            Past
+          </button>
+        </div>
+
+        <label className="filter-mine-label">
+          <input
+            type="checkbox"
+            className="filter-mine-checkbox"
+            checked={onlyMine}
+            onChange={(e) => setOnlyMine(e.target.checked)}
+          />
+          <span>My Events Only</span>
+        </label>
       </div>
 
       {isLoading ? (
-        <div className="state-container">
-          <div className="state-title">Loading events...</div>
-          <div className="state-desc">Fetching latest event updates from server.</div>
-        </div>
+        <Loader label="Loading events..." />
       ) : errorMessage ? (
-        <div className="state-container">
-          <div className="state-title" style={{ color: 'var(--danger)' }}>
-            Error loading events
-          </div>
-          <div className="state-desc">{errorMessage}</div>
-          <button type="button" className="btn-secondary" onClick={fetchEvents}>
-            Retry
-          </button>
-        </div>
+        <ErrorMessage message={errorMessage} onRetry={fetchEvents} />
       ) : events.length === 0 ? (
-        <div className="state-container">
-          <div className="state-title">No events found</div>
-          <p className="state-desc">
-            {filter === 'upcoming'
+        <EmptyState
+          title="No events found"
+          description={
+            onlyMine
+              ? "You haven't created any events yet."
+              : filter === 'upcoming'
               ? 'There are no upcoming events scheduled at the moment.'
               : filter === 'past'
               ? 'There are no past events in the archive.'
-              : 'No events have been created yet.'}
-          </p>
-          <Link to="/events/new" className="btn-primary">
-            Create First Event
-          </Link>
-        </div>
+              : 'No events have been created yet.'
+          }
+          actionText="Create First Event"
+          actionLink="/events/new"
+        />
       ) : (
         <div className="events-grid">
           {events.map((event) => (
-            <div key={event.id} className="event-card">
+            <div
+              key={event.id}
+              className="event-card"
+              onClick={() => navigate(`/events/${event.id}`)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') navigate(`/events/${event.id}`);
+              }}
+            >
               <div>
                 <div className="event-card-header">
                   <h2 className="event-card-title">
-                    <Link to={`/events/${event.id}`}>{event.title}</Link>
+                    <Link
+                      to={`/events/${event.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {event.title}
+                    </Link>
                   </h2>
                   {event.myRsvpStatus === 'going' && (
                     <span className="badge-rsvp going">Going ✓</span>
@@ -146,17 +170,20 @@ export const EventsListPage: React.FC = () => {
 
               <div className="event-card-footer">
                 <div className="event-creator">
-                  {event.creator.avatar && (
+                  {event.creator?.avatar ? (
                     <img
                       src={event.creator.avatar}
                       alt={event.creator.name}
                       className="event-creator-avatar"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
                     />
-                  )}
-                  <span>By {event.creator.name}</span>
+                  ) : null}
+                  <span>By {event.creator?.name || 'Organizer'}</span>
                 </div>
                 <div className="event-going-pill">
-                  {event.goingCount} {event.goingCount === 1 ? 'going' : 'going'}
+                  {event.goingCount} going
                 </div>
               </div>
             </div>
