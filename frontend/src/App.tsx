@@ -26,7 +26,8 @@ export const App: React.FC = () => {
                 <Route path="events/new" element={<EventFormPage />} />
                 <Route path="events/:id" element={<EventDetailPage />} />
                 <Route path="events/:id/edit" element={<EventFormPage />} />
-                <Route path="my-rsvps" element={<MyRsvpsPage />} />
+                <Route path="rsvps" element={<MyRsvpsPage />} />
+                <Route path="my-rsvps" element={<Navigate to="/rsvps" replace />} />
               </Route>
             </Route>
 

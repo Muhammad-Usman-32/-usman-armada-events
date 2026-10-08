@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import './Navbar.css';
 
@@ -13,6 +13,7 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
   const appName = import.meta.env.VITE_APP_NAME || 'Armada Events';
+  const [avatarError, setAvatarError] = useState(false);
 
   return (
     <header className="navbar">
@@ -41,7 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
               + Create Event
             </NavLink>
             <NavLink
-              to="/my-rsvps"
+              to="/rsvps"
               className={({ isActive }) =>
                 isActive ? 'navbar-link active' : 'navbar-link'
               }
@@ -50,15 +51,27 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
             </NavLink>
 
             <div className="navbar-user">
-              {user.avatar ? (
+              {user.avatar && !avatarError ? (
                 <img
                   src={user.avatar}
                   alt={user.name}
                   className="navbar-avatar"
+                  onError={() => setAvatarError(true)}
                 />
               ) : (
-                <div className="navbar-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 600 }}>
-                  {user.name.charAt(0).toUpperCase()}
+                <div
+                  className="navbar-avatar"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    backgroundColor: 'var(--primary-light)',
+                    color: 'var(--primary)',
+                  }}
+                >
+                  {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                 </div>
               )}
               <div className="navbar-user-info">
