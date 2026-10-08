@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { EventItem } from '../types';
+import { Loader } from '../components/common/Loader';
+import { ErrorMessage } from '../components/common/ErrorMessage';
 import './EventFormPage.css';
 
 export const EventFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isEditMode = Boolean(id);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -18,6 +20,7 @@ export const EventFormPage: React.FC = () => {
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [apiError, setApiError] = useState<string | null>(null);
+  const [isNotOwner, setIsNotOwner] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(isEditMode);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -32,8 +35,9 @@ export const EventFormPage: React.FC = () => {
         const event = response.data;
 
         // Check if user is owner
-        if (user && event.createdBy !== user.id) {
-          setApiError('You are not authorized to edit this event.');
+        if (user?.id && String(event.createdBy) !== String(user.id)) {
+          setIsNotOwner(true);
+          setApiError('You are not authorized to edit this event. Only the organizer can modify it.');
           return;
         }
 
@@ -59,8 +63,10 @@ export const EventFormPage: React.FC = () => {
       }
     };
 
-    fetchEvent();
-  }, [id, isEditMode, user]);
+    if (!isAuthLoading) {
+      fetchEvent();
+    }
+  }, [id, isEditMode, user, isAuthLoading]);
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -109,10 +115,17 @@ export const EventFormPage: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isAuthLoading) {
+    return <Loader label="Loading event..." />;
+  }
+
+  if (isNotOwner) {
     return (
-      <div className="form-container" style={{ textAlign: 'center', color: 'var(--muted)' }}>
-        Loading event details...
+      <div className="form-container">
+        <ErrorMessage message={apiError || 'You are not authorized to edit this event.'} />
+        <Link to={`/events/${id}`} className="btn-secondary">
+          &larr; Back to Event Detail
+        </Link>
       </div>
     );
   }
@@ -128,21 +141,7 @@ export const EventFormPage: React.FC = () => {
         </p>
       </div>
 
-      {apiError && (
-        <div
-          style={{
-            backgroundColor: 'var(--danger-light)',
-            border: '1px solid var(--danger)',
-            color: 'var(--danger)',
-            padding: '0.75rem',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: 'var(--font-size-sm)',
-            marginBottom: '1.25rem',
-          }}
-        >
-          {apiError}
-        </div>
-      )}
+      {apiError && <ErrorMessage message={apiError} />}
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
